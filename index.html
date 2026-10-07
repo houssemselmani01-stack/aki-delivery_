@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aki Delivery — إرسال موقعي</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,sans-serif;background:#f6f1e9;display:flex;align-items:center;justify-content:center;padding:20px;color:#171717}
+.card{width:min(430px,100%);background:white;border-radius:28px;padding:30px 22px;box-shadow:0 12px 40px #00000018;text-align:center}
+.logo{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:8px}
+.sub{color:#666;margin:0 0 26px}
+button{width:100%;border:0;border-radius:16px;padding:17px;font-size:18px;font-weight:700;cursor:pointer;background:#111;color:#fff}
+button:disabled{opacity:.55;cursor:wait}
+.status{margin-top:18px;line-height:1.7;color:#555;min-height:30px}
+.small{font-size:12px;color:#888;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">Aki Delivery</div>
+  <p class="sub">أرسل موقعك للسائق لتسهيل وصول طلبك</p>
+  <button id="send">📍 إرسال موقعي عبر WhatsApp</button>
+  <div id="status" class="status"></div>
+  <div class="small">سيطلب الهاتف السماح بالوصول إلى موقعك.</div>
+</div>
+<script>
+const phone="213556911632";
+const btn=document.getElementById("send");
+const status=document.getElementById("status");
+
+btn.addEventListener("click",()=>{
+  if(!navigator.geolocation){
+    status.textContent="هذا الهاتف/المتصفح لا يدعم تحديد الموقع.";
+    return;
+  }
+  btn.disabled=true;
+  status.textContent="جاري تحديد موقعك… اسمح بالوصول إلى الموقع عند ظهور الطلب.";
+
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude.toFixed(6);
+    const lon=pos.coords.longitude.toFixed(6);
+    const maps=`https://www.google.com/maps?q=${lat},${lon}`;
+    const message=`السلام عليكم، أريد الطلب من Aki Delivery 📦\n\n📍 موقعي:\n${maps}`;
+    const wa=`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    status.textContent="تم تحديد موقعك. جارٍ فتح WhatsApp…";
+    window.location.href=wa;
+  },err=>{
+    btn.disabled=false;
+    const msg = err.code===1 ? "لم تسمح بالوصول إلى الموقع. فعّل الموقع واسمح للمتصفح بالوصول إليه ثم حاول مرة أخرى."
+      : err.code===2 ? "تعذر تحديد الموقع حالياً. تأكد من تشغيل GPS/الموقع والإنترنت."
+      : "انتهت مهلة تحديد الموقع. حاول مرة أخرى.";
+    status.textContent=msg;
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+});
+</script>
+</body>
+</html>
